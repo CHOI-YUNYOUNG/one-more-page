@@ -18,7 +18,7 @@ const themes: { value: Theme; label: string; emoji: string; colors: string[] }[]
   { value: 'light',  label: '라이트',   emoji: '☀️', colors: ['#ffffff', '#f4f4f5', '#18181b'] },
   { value: 'dark',   label: '다크',     emoji: '🌙', colors: ['#09090b', '#18181b', '#fafafa'] },
   { value: 'sepia',  label: '세피아',   emoji: '📜', colors: ['#f5efe0', '#e8d9be', '#5c4a2a'] },
-  { value: 'forest', label: '포레스트', emoji: '🌲', colors: ['#1a2e1a', '#2d4a2d', '#d4e8d4'] },
+  { value: 'forest', label: '포레스트', emoji: '🌲', colors: ['#1a1c1a', '#242624', '#4a7a4a'] },
 ]
 
 export default function ProfilePage() {

@@ -14,7 +14,17 @@ function buildListUrl(queryType: string, ttbKey: string) {
   return url
 }
 
+const CACHE_TTL_MS = 30 * 60 * 1000 // 30분
+
+let cachedData: { bestseller: unknown[]; recommended: unknown[] } | null = null
+let cacheExpiresAt = 0
+
 export async function GET() {
+  const now = Date.now()
+  if (cachedData && now < cacheExpiresAt) {
+    return NextResponse.json(cachedData)
+  }
+
   const ttbKey = process.env.ALADIN_TTB_KEY!
 
   const [bestsellerText, blogBestText] = await Promise.all([
@@ -22,8 +32,11 @@ export async function GET() {
     aladinFetch(buildListUrl('BlogBest', ttbKey)),
   ])
 
-  return NextResponse.json({
+  cachedData = {
     bestseller: parseAladinResponse(bestsellerText).item ?? [],
     recommended: parseAladinResponse(blogBestText).item ?? [],
-  })
+  }
+  cacheExpiresAt = now + CACHE_TTL_MS
+
+  return NextResponse.json(cachedData)
 }
