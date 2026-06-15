@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ThemeSelector } from './theme-selector'
-import { BookOpen, Search, Home, CalendarCheck, Target, LogOut } from 'lucide-react'
+import { BookOpen, Search, Home, CalendarCheck, User, LogOut } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { useEffect, useState } from 'react'
 
@@ -13,7 +13,7 @@ const navItems = [
   { href: '/books/search', label: '책 검색', icon: Search },
   { href: '/books', label: '내 책장', icon: BookOpen },
   { href: '/attendance', label: '출석 체크', icon: CalendarCheck },
-  { href: '/goals', label: '독서 목표', icon: Target },
+  { href: '/profile', label: '프로필', icon: User },
 ]
 
 export function Sidebar() {
