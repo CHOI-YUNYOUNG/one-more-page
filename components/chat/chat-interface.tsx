@@ -32,6 +32,7 @@ export function ChatInterface({
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null)
   const [showClearDialog, setShowClearDialog] = useState(false)
@@ -51,6 +52,7 @@ export function ChatInterface({
         setMessages(data.messages)
         setConversationId(data.id)
       }
+      setInitialLoading(false)
     })()
   }, [userId, book.id])
 
@@ -159,6 +161,45 @@ export function ChatInterface({
       e.preventDefault()
       sendMessage()
     }
+  }
+
+  if (initialLoading) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-200px)]">
+        <div className="flex-1 space-y-4 pr-4 pt-2">
+          {/* AI 메시지 스켈레톤 */}
+          <div className="flex justify-start gap-2">
+            <div className="w-8 h-8 rounded-full bg-muted animate-pulse shrink-0 mt-1" />
+            <div className="space-y-2 max-w-[60%]">
+              <div className="h-4 bg-muted animate-pulse rounded-2xl rounded-tl-sm w-48" />
+              <div className="h-4 bg-muted animate-pulse rounded w-36" />
+              <div className="h-3 bg-muted animate-pulse rounded w-16" />
+            </div>
+          </div>
+          {/* 사용자 메시지 스켈레톤 */}
+          <div className="flex justify-end">
+            <div className="space-y-2 max-w-[60%]">
+              <div className="h-4 bg-muted animate-pulse rounded-2xl rounded-tr-sm w-40" />
+              <div className="h-3 bg-muted animate-pulse rounded w-12 ml-auto" />
+            </div>
+          </div>
+          {/* AI 메시지 스켈레톤 */}
+          <div className="flex justify-start gap-2">
+            <div className="w-8 h-8 rounded-full bg-muted animate-pulse shrink-0 mt-1" />
+            <div className="space-y-2 max-w-[70%]">
+              <div className="h-4 bg-muted animate-pulse rounded-2xl rounded-tl-sm w-56" />
+              <div className="h-4 bg-muted animate-pulse rounded w-44" />
+              <div className="h-4 bg-muted animate-pulse rounded w-32" />
+              <div className="h-3 bg-muted animate-pulse rounded w-16" />
+            </div>
+          </div>
+        </div>
+        <div className="border-t pt-4 flex gap-2">
+          <div className="flex-1 h-16 bg-muted animate-pulse rounded-md" />
+          <div className="w-10 h-16 bg-muted animate-pulse rounded-md" />
+        </div>
+      </div>
+    )
   }
 
   return (

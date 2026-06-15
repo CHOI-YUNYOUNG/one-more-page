@@ -103,6 +103,7 @@ export default function BookSearchPage() {
   const userId = useUser()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<AladinBook[]>([])
+  const [searchError, setSearchError] = useState(false)
   const [ranking, setRanking] = useState<RankingData | null>(null)
   const [searching, setSearching] = useState(false)
   const [rankingLoading, setRankingLoading] = useState(true)
@@ -125,16 +126,19 @@ export default function BookSearchPage() {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     if (!query.trim()) {
       setResults([])
+      setSearchError(false)
       return
     }
     debounceRef.current = setTimeout(async () => {
       setSearching(true)
+      setSearchError(false)
       try {
         const res = await fetch(`/api/books/search?query=${encodeURIComponent(query)}`)
         const data = await res.json()
         setResults(data.item || [])
       } catch {
-        toast.error('검색에 실패했습니다.')
+        setResults([])
+        setSearchError(true)
       }
       setSearching(false)
     }, 400)
@@ -232,7 +236,7 @@ export default function BookSearchPage() {
             ))
           ) : (
             <div className="text-center py-12 text-muted-foreground text-sm">
-              검색 결과가 없습니다.
+              {searchError ? '검색 중 오류가 발생했습니다. 다시 시도해주세요.' : '검색 결과가 없어요.'}
             </div>
           )}
         </div>
