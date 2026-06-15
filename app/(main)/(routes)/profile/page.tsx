@@ -8,13 +8,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
-import { Flame, Trophy, Target, BookOpen, MessageSquare, User, Pencil } from 'lucide-react'
+import { Flame, Trophy, Target, BookOpen, MessageSquare, User, Pencil, Palette } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
+import { useTheme, Theme } from '@/hooks/use-theme'
+
+const themes: { value: Theme; label: string; emoji: string; colors: string[] }[] = [
+  { value: 'light',  label: '라이트',   emoji: '☀️', colors: ['#ffffff', '#f4f4f5', '#18181b'] },
+  { value: 'dark',   label: '다크',     emoji: '🌙', colors: ['#09090b', '#18181b', '#fafafa'] },
+  { value: 'sepia',  label: '세피아',   emoji: '📜', colors: ['#f5efe0', '#e8d9be', '#5c4a2a'] },
+  { value: 'forest', label: '포레스트', emoji: '🌲', colors: ['#1a2e1a', '#2d4a2d', '#d4e8d4'] },
+]
 
 export default function ProfilePage() {
   const userId = useUser()
+  const { theme, setTheme } = useTheme()
   const [displayName, setDisplayName] = useState('')
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState('')
@@ -157,6 +166,45 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* 테마 설정 */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Palette className="h-4 w-4" />
+            테마
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-3">
+            {themes.map((t) => {
+              const active = theme === t.value
+              return (
+                <button
+                  key={t.value}
+                  onClick={() => setTheme(t.value)}
+                  className={`relative rounded-xl border-2 p-3 text-left transition-all ${
+                    active ? 'border-primary shadow-sm' : 'border-border hover:border-muted-foreground'
+                  }`}
+                >
+                  {/* 색상 스워치 */}
+                  <div className="flex gap-1 mb-2">
+                    {t.colors.map((c, i) => (
+                      <div key={i} className="h-5 flex-1 rounded-sm" style={{ backgroundColor: c }} />
+                    ))}
+                  </div>
+                  <p className="text-xs font-medium">
+                    {t.emoji} {t.label}
+                  </p>
+                  {active && (
+                    <span className="absolute top-2 right-2 text-primary text-xs font-bold">✓</span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 독서 목표 */}
       <Card>
