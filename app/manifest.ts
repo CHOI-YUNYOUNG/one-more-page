@@ -7,18 +7,14 @@ export default function manifest(): MetadataRoute.Manifest {
     description: '나만의 독서 기록 & AI 독서 친구',
     start_url: '/',
     display: 'standalone',
-    background_color: '#1a2e1a',
-    theme_color: '#2d4a2d',
+    background_color: '#ffffff',
+    theme_color: '#ffffff',
     icons: [
       {
-        src: '/icon.png',
-        sizes: '32x32',
+        src: '/app-icon.png',
+        sizes: '512x512',
         type: 'image/png',
-      },
-      {
-        src: '/apple-icon.png',
-        sizes: '180x180',
-        type: 'image/png',
+        purpose: 'any maskable',
       },
     ],
   }

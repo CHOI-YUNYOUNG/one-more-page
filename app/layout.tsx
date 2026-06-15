@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   title: 'One More Page',
   description: '나만의 독서 기록 & AI 독서 친구',
   manifest: '/manifest.webmanifest',
+  icons: {
+    icon: '/app-icon.png',
+    apple: '/app-icon.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
