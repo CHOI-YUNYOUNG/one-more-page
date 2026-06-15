@@ -254,11 +254,11 @@ export default function BookSearchPage() {
             </div>
             {rankingLoading ? (
               <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => <BookSkeleton key={i} rank={i + 1} />)}
+                {Array.from({ length: 3 }).map((_, i) => <BookSkeleton key={i} rank={i + 1} />)}
               </div>
             ) : (
               <div className="space-y-3">
-                {ranking?.bestseller.map((book, i) => (
+                {ranking?.bestseller.slice(0, 5).map((book, i) => (
                   <BookItem key={book.isbn13 || book.isbn} book={book} rank={i + 1} onAdd={setSelectedBook} adding={adding} />
                 ))}
               </div>
@@ -274,11 +274,11 @@ export default function BookSearchPage() {
             </div>
             {rankingLoading ? (
               <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => <BookSkeleton key={i} />)}
+                {Array.from({ length: 3 }).map((_, i) => <BookSkeleton key={i} />)}
               </div>
             ) : (
               <div className="space-y-3">
-                {ranking?.recommended.map((book) => (
+                {ranking?.recommended.slice(0, 5).map((book) => (
                   <BookItem key={book.isbn13 || book.isbn} book={book} onAdd={setSelectedBook} adding={adding} />
                 ))}
               </div>
