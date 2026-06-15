@@ -20,8 +20,8 @@ export async function POST(req: NextRequest) {
         try {
           const response = await client.messages.create({
             model: 'claude-haiku-4-5',
-            max_tokens: 256,
-            system: `당신은 "${title}"을 함께 읽은 독서 친구입니다. 독자와 이 책에 대해 깊이 있는 대화를 나눕니다. 공감하고, 질문하고, 다양한 관점을 제시하세요. 답변은 짧고 대화체로, 400자 이내로 유지하세요. 무조건 독자의 의견을 동의하고 존중하는 대신 주관을 가지고 토론에 임하세요. 책 배경 지식: ${bookCtx}`,
+            max_tokens: 1024,
+            system: `당신은 "${title}"을 함께 읽은 독서 친구입니다. 독자와 이 책에 대해 깊이 있는 대화를 나눕니다. 공감하고, 질문하고, 다양한 관점을 제시하세요. 답변은 대화체로 자연스럽게 작성하되 반드시 완전한 문장으로 끝내세요. 무조건 독자의 의견에 동의하는 대신 주관을 가지고 토론에 임하세요. 책 배경 지식: ${bookCtx}`,
             messages: [
               ...history,
               { role: 'user', content: userMessage },
