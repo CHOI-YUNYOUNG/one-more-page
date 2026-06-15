@@ -17,25 +17,25 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       style={
         {
-          /* 기본 토스트 — 연한 세이지 그린 */
-          "--normal-bg": "#eef5ee",
-          "--normal-text": "#2c4a2c",
-          "--normal-border": "#c4d8c4",
+          /* 기본 — 깊은 소나무 숲 */
+          "--normal-bg": "#2d4a2d",
+          "--normal-text": "#d4e8d0",
+          "--normal-border": "#4a6b4a",
 
-          /* 성공 — 맑은 초록 */
-          "--success-bg": "#e2f0e2",
-          "--success-text": "#1a421a",
-          "--success-border": "#a8cca8",
+          /* 성공 — 이끼 사이 햇살 */
+          "--success-bg": "#1e4228",
+          "--success-text": "#a8d8a0",
+          "--success-border": "#3a6448",
 
-          /* 에러 — 부드러운 테라코타 (강렬한 빨강 대신) */
-          "--error-bg": "#f5ede8",
-          "--error-text": "#5c2a1e",
-          "--error-border": "#d4a898",
+          /* 에러 — 낙엽 (빨강 대신 따뜻한 앰버) */
+          "--error-bg": "#4a2c1e",
+          "--error-text": "#e8c8a0",
+          "--error-border": "#7a4c38",
 
-          /* 정보 */
-          "--info-bg": "#e8f0f5",
-          "--info-text": "#1e3a4a",
-          "--info-border": "#a8c4d4",
+          /* 경고 */
+          "--warning-bg": "#3d3a1a",
+          "--warning-text": "#e0d898",
+          "--warning-border": "#6b6438",
 
           "--border-radius": "0.75rem",
           "--font-size": "0.875rem",
@@ -43,7 +43,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }
       toastOptions={{
         style: {
-          boxShadow: "0 2px 12px rgba(44, 74, 44, 0.10)",
+          boxShadow: "0 4px 16px rgba(20, 40, 20, 0.35)",
         },
       }}
       {...props}
