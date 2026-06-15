@@ -44,12 +44,19 @@ export default function LoginPage() {
         router.refresh()
       }
     } else {
-      const { error } = await supabase.auth.signUp({ email, password })
+      const { data, error } = await supabase.auth.signUp({ email, password })
       if (error) {
         setMessage({ type: 'error', text: error.message })
+      } else if (data.user?.identities?.length === 0) {
+        setMessage({ type: 'error', text: '이미 가입된 이메일입니다. 로그인해주세요.' })
       } else {
-        router.push('/')
-        router.refresh()
+        setMessage({ type: 'info', text: '회원가입이 완료되었습니다! 로그인해주세요.' })
+        setPassword('')
+        setConfirmPassword('')
+        setTimeout(() => {
+          setMode('login')
+          setMessage(null)
+        }, 1500)
       }
     }
     setLoading(false)
