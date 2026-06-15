@@ -13,12 +13,25 @@ export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [message, setMessage] = useState<{ type: 'error' | 'info'; text: string } | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const switchMode = (next: 'login' | 'signup') => {
+    setMode(next)
+    setMessage(null)
+    setConfirmPassword('')
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setMessage(null)
+
+    if (mode === 'signup' && password !== confirmPassword) {
+      setMessage({ type: 'error', text: '비밀번호가 일치하지 않습니다.' })
+      return
+    }
+
     setLoading(true)
     const supabase = createClient()
 
@@ -35,7 +48,8 @@ export default function LoginPage() {
       if (error) {
         setMessage({ type: 'error', text: error.message })
       } else {
-        setMessage({ type: 'info', text: '가입이 완료되었습니다! 이메일 인증 후 로그인해주세요.' })
+        router.push('/')
+        router.refresh()
       }
     }
     setLoading(false)
@@ -49,10 +63,9 @@ export default function LoginPage() {
         <CardDescription>나만의 독서 기록 & AI 독서 친구</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* 탭 */}
         <div className="flex rounded-lg bg-muted p-1 text-sm">
           <button
-            onClick={() => { setMode('login'); setMessage(null) }}
+            onClick={() => switchMode('login')}
             className={`flex-1 rounded-md py-1.5 font-medium transition-colors ${
               mode === 'login' ? 'bg-background shadow-sm' : 'text-muted-foreground'
             }`}
@@ -60,7 +73,7 @@ export default function LoginPage() {
             로그인
           </button>
           <button
-            onClick={() => { setMode('signup'); setMessage(null) }}
+            onClick={() => switchMode('signup')}
             className={`flex-1 rounded-md py-1.5 font-medium transition-colors ${
               mode === 'signup' ? 'bg-background shadow-sm' : 'text-muted-foreground'
             }`}
@@ -87,6 +100,17 @@ export default function LoginPage() {
             minLength={6}
             autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
           />
+          {mode === 'signup' && (
+            <Input
+              type="password"
+              placeholder="비밀번호 확인"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={6}
+              autoComplete="new-password"
+            />
+          )}
 
           {message && (
             <p className={`text-xs px-1 ${message.type === 'error' ? 'text-destructive' : 'text-primary'}`}>
