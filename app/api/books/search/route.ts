@@ -1,11 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
+import https from 'node:https'
+
+function httpsGet(url: URL): Promise<string> {
+  return new Promise((resolve, reject) => {
+    https.get(
+      { hostname: url.hostname, path: url.pathname + url.search, rejectUnauthorized: false },
+      (res) => {
+        let body = ''
+        res.on('data', (chunk: Buffer) => (body += chunk.toString()))
+        res.on('end', () => resolve(body))
+        res.on('error', reject)
+      }
+    ).on('error', reject)
+  })
+}
 
 export async function GET(req: NextRequest) {
   const query = req.nextUrl.searchParams.get('query')
   if (!query) return NextResponse.json({ error: 'query required' }, { status: 400 })
 
   const ttbKey = process.env.ALADIN_TTB_KEY
-  const url = new URL('http://www.aladin.co.kr/ttb/api/ItemSearch.aspx')
+  const url = new URL('https://www.aladin.co.kr/ttb/api/ItemSearch.aspx')
   url.searchParams.set('TTBKey', ttbKey!)
   url.searchParams.set('Query', query)
   url.searchParams.set('QueryType', 'Keyword')
@@ -16,8 +31,7 @@ export async function GET(req: NextRequest) {
   url.searchParams.set('Version', '20131101')
   url.searchParams.set('Cover', 'Big')
 
-  const res = await fetch(url.toString())
-  const text = await res.text()
+  const text = await httpsGet(url)
 
   const cleaned = text.replace(/^[^{]*/, '').replace(/[^}]*$/, '')
   const data = JSON.parse(cleaned)
