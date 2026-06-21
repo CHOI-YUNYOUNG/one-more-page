@@ -176,7 +176,7 @@ export function HighlightForm({
                     )}
                     {h.content}
                   </blockquote>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                  <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0">
                     <Button
                       size="icon"
                       variant="ghost"
