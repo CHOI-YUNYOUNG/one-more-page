@@ -3,7 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  { global: { fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' }) } }
 )
 
 function secondsUntilNext9amKST(): number {
@@ -35,9 +36,12 @@ export async function GET() {
   }
 
   const ttl = secondsUntilNext9amKST()
+  const isDev = process.env.NODE_ENV === 'development'
   return NextResponse.json(data ?? [], {
     headers: {
-      'Cache-Control': `public, s-maxage=${ttl}, stale-while-revalidate=3600`,
+      'Cache-Control': isDev
+        ? 'no-store'
+        : `public, s-maxage=${ttl}, stale-while-revalidate=3600`,
     },
   })
 }
