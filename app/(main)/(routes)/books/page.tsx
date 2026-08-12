@@ -6,8 +6,15 @@ import { useUser } from '@/hooks/use-user'
 import { BookCard } from '@/components/books/book-card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { Plus, ArrowUpDown } from 'lucide-react'
 
 const STATUSES = [
   { value: 'all', label: '전체' },
@@ -17,10 +24,19 @@ const STATUSES = [
   { value: 'stopped', label: '그만 읽기' },
 ]
 
+const SORTS: Record<string, string> = {
+  recent: '최근 추가순',
+  rating: '별점 높은순',
+  title: '제목순',
+}
+
+type SortKey = keyof typeof SORTS
+
 export default function BookshelfPage() {
   const userId = useUser()
   const [books, setBooks] = useState<UserBook[]>([])
   const [loading, setLoading] = useState(true)
+  const [sort, setSort] = useState<SortKey>('recent')
 
   const fetchBooks = useCallback(async () => {
     if (!userId) return
@@ -37,8 +53,20 @@ export default function BookshelfPage() {
     fetchBooks()
   }, [fetchBooks])
 
+  const sortBooks = (arr: UserBook[]) => {
+    const sorted = [...arr]
+    if (sort === 'rating') {
+      sorted.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+    } else if (sort === 'title') {
+      sorted.sort((a, b) => (a.book?.title ?? '').localeCompare(b.book?.title ?? '', 'ko'))
+    } else {
+      sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    }
+    return sorted
+  }
+
   const filtered = (status: string) =>
-    status === 'all' ? books : books.filter((b) => b.status === status)
+    sortBooks(status === 'all' ? books : books.filter((b) => b.status === status))
 
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-6">
@@ -56,16 +84,32 @@ export default function BookshelfPage() {
       </div>
 
       <Tabs defaultValue="all">
-        <TabsList>
-          {STATUSES.map((s) => (
-            <TabsTrigger key={s.value} value={s.value}>
-              {s.label}
-              <span className="ml-1 text-xs opacity-70">
-                ({filtered(s.value).length})
-              </span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <TabsList>
+            {STATUSES.map((s) => (
+              <TabsTrigger key={s.value} value={s.value}>
+                {s.label}
+                <span className="ml-1 text-xs opacity-70">
+                  ({filtered(s.value).length})
+                </span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          <Select value={sort} onValueChange={(v) => v && setSort(v as SortKey)}>
+            <SelectTrigger className="w-36 h-8 text-xs">
+              <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+              <SelectValue>{(v) => SORTS[v as string]}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(SORTS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         {STATUSES.map((s) => (
           <TabsContent key={s.value} value={s.value} className="mt-4">
             {loading ? (

@@ -4,18 +4,21 @@ import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { UserBook } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
+import { CircleSlash } from 'lucide-react'
 import Link from 'next/link'
 
-const statusLabel: Record<string, { label: string; color: string }> = {
+const statusLabel: Record<string, { label: string; color: string; className?: string }> = {
   wishlist: { label: '읽고 싶어요', color: 'secondary' },
   reading: { label: '읽는 중', color: 'default' },
   completed: { label: '완독', color: 'outline' },
-  stopped: { label: '그만 읽기', color: 'outline' },
+  stopped: { label: '그만 읽기', color: 'outline', className: 'border-dashed text-muted-foreground' },
 }
 
 export function BookCard({ userBook }: { userBook: UserBook }) {
   const book = userBook.book!
   const status = statusLabel[userBook.status]
+  const isStopped = userBook.status === 'stopped'
   const progress =
     userBook.total_pages && userBook.current_page
       ? Math.round((userBook.current_page / userBook.total_pages) * 100)
@@ -23,7 +26,7 @@ export function BookCard({ userBook }: { userBook: UserBook }) {
 
   return (
     <Link href={`/books/${userBook.id}`}>
-      <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+      <Card className={cn('hover:shadow-md transition-shadow cursor-pointer h-full', isStopped && 'opacity-75')}>
         <CardContent className="p-4 flex gap-3">
           <div className="shrink-0">
             {book.cover_url ? (
@@ -32,7 +35,7 @@ export function BookCard({ userBook }: { userBook: UserBook }) {
                 alt={book.title}
                 width={60}
                 height={85}
-                className="rounded object-cover"
+                className={cn('rounded object-cover', isStopped && 'grayscale')}
               />
             ) : (
               <div className="w-[60px] h-[85px] bg-muted rounded flex items-center justify-center text-2xl">
@@ -45,7 +48,11 @@ export function BookCard({ userBook }: { userBook: UserBook }) {
             <p className="text-xs text-muted-foreground mt-1 truncate">{book.author}</p>
             <p className="text-xs text-muted-foreground truncate">{book.publisher}</p>
             <div className="mt-2 flex items-center gap-2">
-              <Badge variant={status.color as 'default' | 'secondary' | 'outline'} className="text-xs">
+              <Badge
+                variant={status.color as 'default' | 'secondary' | 'outline'}
+                className={cn('text-xs', status.className)}
+              >
+                {isStopped && <CircleSlash className="h-3 w-3 mr-1" />}
                 {status.label}
               </Badge>
               {userBook.rating && (
