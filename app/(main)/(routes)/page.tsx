@@ -27,14 +27,24 @@ export default function DashboardPage() {
     const supabaseClient = createClient()
     supabaseClient.auth.getUser().then(({ data: { user } }) => {
       if (!user?.created_at) return
-      const name = (user.user_metadata?.display_name as string | undefined)?.trim() || ''
+      const name = (user.user_metadata?.display_name as string | undefined)?.trim() || '글벗'
       // 가입일부터 오늘까지 함께한 일수 (가입 당일 = 1일)
       const days = differenceInCalendarDays(new Date(), new Date(user.created_at)) + 1
       const messages = [
-        `한 장 더와 함께한 지 ${days}일, 반가워요!`,
-        `한 장 더와 함께한 지 ${days}일, 우리 더 오래 봐요!`,
-        `한 장 더와 함께한 지 ${days}일, 독서왕이 되는 그날까지!`,
-        ...(name ? [`한 장 더와 함께한 지 ${days}일, ${name}님 또 오셨네요, 반가워요!`] : []),
+        `한 장 더와 함께한 지 ${days}일, ${name}님 반가워요! 💕`,
+        `한 장 더와 함께한 지 ${days}일, ${name}님, 우리 더 오래 봐요! 🫶`,
+        `한 장 더와 함께한 지 ${days}일, ${name}님께서 독서왕이 되는 그날까지 한 장 더가 함께할게요! 💪`,
+        `한 장 더와 함께한 지 ${days}일, ${name}님, 오늘은 무슨 책을 탐독하실 건가요? 👻`,
+        `한 장 더와 함께한 지 ${days}일, ${name}님께서 자주 와주셔서 기분이 우주로 날아갈 것만 같아요. 🚀`,
+        `한 장 더와 함께한 지 ${days}일, ${name}님, 오늘도 한 장 더 읽어볼까요? 📖`,
+        `한 장 더와 함께한 지 ${days}일, 꼭 완독하지 않아도 괜찮아요. 중간에 멈추어도 좋아요!`,
+        `한 장 더와 함께한 지 ${days}일, AI가 루틴을 생성해주기도 한답니다. 마음에 들지 않으면 재생성해도 좋아요. 😎`,
+        `한 장 더와 함께한 지 ${days}일, AI와 토론을 통해 책에 대한 깊이감을 더해보세요. 💬`,
+        `한 장 더와 함께한 지 ${days}일, 이런 또 오셨군요. ${name}님, 얼마나 독서왕이 되시려는 거에요? 🥴`,
+        `한 장 더와 함께한 지 ${days}일, 내 하이라이트 페이지에서 ${name}님께서 작성한 하이라이트를 모아볼 수 있어요 ⭐️`,
+        `한 장 더와 함께한 지 ${days}일, 테마가 4가지가 준비되어 있어요. 원하시는 테마를 선택해보세요. 🎨`,
+        `한 장 더와 함께한 지 ${days}일, 닉네임 설정도 가능하답니다 🤫`,
+        `한 장 더와 함께한 지 ${days}일, ${name}님 또 오셨네요, 반가워요!`
       ]
       setGreeting(messages[Math.floor(Math.random() * messages.length)])
     })
@@ -74,7 +84,7 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold">안녕하세요 👋</h1>
         <p className="text-muted-foreground mt-1">
-          {greeting || '오늘도 한 페이지 더 읽어볼까요?'}
+          {greeting}
         </p>
       </div>
 
