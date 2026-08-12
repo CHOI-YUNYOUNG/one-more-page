@@ -92,7 +92,7 @@
 
 [data-theme="forest"] {
   --toast-normal-bg: oklch(0.18 0.012 150);
-  --toast-normal-text: oklch(0.86 0.012 145);
+  --toast-normal-text: oklch(0.92 0.014 145);
   --toast-normal-border: oklch(1 0 0 / 11%);
   --toast-success-bg: oklch(0.2 0.05 148);
   --toast-success-text: oklch(0.72 0.1 145);
@@ -209,30 +209,30 @@
 /* ── Forest (차콜 + 짙은 초록 포인트) ── */
 [data-theme="forest"] {
   --background: oklch(0.13 0.008 150);
-  --foreground: oklch(0.86 0.012 145);
+  --foreground: oklch(0.92 0.014 145);
   --card: oklch(0.18 0.012 150);
-  --card-foreground: oklch(0.86 0.012 145);
+  --card-foreground: oklch(0.92 0.014 145);
   --popover: oklch(0.18 0.012 150);
-  --popover-foreground: oklch(0.86 0.012 145);
+  --popover-foreground: oklch(0.92 0.014 145);
   --primary: oklch(0.46 0.13 145);
   --primary-foreground: oklch(0.96 0.01 145);
   --secondary: oklch(0.22 0.008 150);
-  --secondary-foreground: oklch(0.86 0.012 145);
+  --secondary-foreground: oklch(0.92 0.014 145);
   --muted: oklch(0.22 0.008 150);
-  --muted-foreground: oklch(0.56 0.018 145);
+  --muted-foreground: oklch(0.73 0.022 145);
   --accent: oklch(0.25 0.018 145);
-  --accent-foreground: oklch(0.86 0.012 145);
+  --accent-foreground: oklch(0.92 0.014 145);
   --destructive: oklch(0.65 0.18 22);
   --border: oklch(1 0 0 / 11%);
   --input: oklch(1 0 0 / 9%);
   --ring: oklch(0.46 0.13 145);
   --radius: 0.625rem;
   --sidebar: oklch(0.16 0.012 150);
-  --sidebar-foreground: oklch(0.86 0.012 145);
+  --sidebar-foreground: oklch(0.92 0.014 145);
   --sidebar-primary: oklch(0.46 0.13 145);
   --sidebar-primary-foreground: oklch(0.96 0.01 145);
   --sidebar-accent: oklch(0.22 0.008 150);
-  --sidebar-accent-foreground: oklch(0.86 0.012 145);
+  --sidebar-accent-foreground: oklch(0.92 0.014 145);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.46 0.13 145);
 }
