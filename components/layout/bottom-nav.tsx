@@ -3,13 +3,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { BookOpen, Search, Home, CalendarCheck, User } from 'lucide-react'
+import { BookOpen, Search, Home, User, Highlighter } from 'lucide-react'
 
 const navItems = [
   { href: '/', label: '홈', icon: Home },
   { href: '/books/search', label: '검색', icon: Search },
   { href: '/books', label: '책장', icon: BookOpen },
-  { href: '/attendance', label: '출석', icon: CalendarCheck },
+  { href: '/my-highlights', label: '하이라이트', icon: Highlighter },
   { href: '/profile', label: '프로필', icon: User },
 ]
 

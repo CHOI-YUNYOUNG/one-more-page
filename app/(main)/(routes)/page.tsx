@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { differenceInCalendarDays } from 'date-fns'
 import { supabase, UserBook, PublicHighlight } from '@/lib/supabase'
 import { useUser } from '@/hooks/use-user'
+import { createClient } from '@/utils/supabase/client'
 import { useStreak } from '@/hooks/use-streak'
 import { StreakDisplay } from '@/components/attendance/streak-display'
 import { BookCard } from '@/components/books/book-card'
@@ -19,6 +21,23 @@ export default function DashboardPage() {
   const { goal, loading, checkedIn, checkIn } = useStreak(userId)
   const [recentBooks, setRecentBooks] = useState<UserBook[]>([])
   const [publicHighlights, setPublicHighlights] = useState<PublicHighlight[]>([])
+  const [greeting, setGreeting] = useState('')
+
+  useEffect(() => {
+    const supabaseClient = createClient()
+    supabaseClient.auth.getUser().then(({ data: { user } }) => {
+      if (!user?.created_at) return
+      const name = (user.user_metadata?.display_name as string | undefined)?.trim() || ''
+      // 가입일부터 오늘까지 함께한 일수 (가입 당일 = 1일)
+      const days = differenceInCalendarDays(new Date(), new Date(user.created_at)) + 1
+      const messages = [
+        `한 장 더와 함께한 지 ${days}일, 우리 더 오래 봐요!`,
+        `한 장 더와 함께한 지 ${days}일, 독서왕이 되는 그날까지!`,
+        ...(name ? [`한 장 더와 함께한 지 ${days}일, ${name}님 또 오셨네요, 반가워요!`] : []),
+      ]
+      setGreeting(messages[Math.floor(Math.random() * messages.length)])
+    })
+  }, [])
 
   useEffect(() => {
     if (!userId) return
@@ -53,7 +72,9 @@ export default function DashboardPage() {
     <div className="p-8 max-w-4xl mx-auto space-y-8">
       <div>
         <h1 className="text-2xl font-bold">안녕하세요 👋</h1>
-        <p className="text-muted-foreground mt-1">오늘도 한 페이지 더 읽어볼까요?</p>
+        <p className="text-muted-foreground mt-1">
+          {greeting || '오늘도 한 페이지 더 읽어볼까요?'}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -14,6 +14,7 @@ const STATUSES = [
   { value: 'reading', label: '읽는 중' },
   { value: 'completed', label: '완독' },
   { value: 'wishlist', label: '읽고 싶어요' },
+  { value: 'stopped', label: '그만 읽기' },
 ]
 
 export default function BookshelfPage() {

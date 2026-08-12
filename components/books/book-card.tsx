@@ -10,6 +10,7 @@ const statusLabel: Record<string, { label: string; color: string }> = {
   wishlist: { label: '읽고 싶어요', color: 'secondary' },
   reading: { label: '읽는 중', color: 'default' },
   completed: { label: '완독', color: 'outline' },
+  stopped: { label: '그만 읽기', color: 'outline' },
 }
 
 export function BookCard({ userBook }: { userBook: UserBook }) {

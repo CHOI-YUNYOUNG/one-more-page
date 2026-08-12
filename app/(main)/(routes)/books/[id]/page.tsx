@@ -185,6 +185,7 @@ export default function BookDetailPage() {
                 <SelectItem value="wishlist">읽고 싶어요</SelectItem>
                 <SelectItem value="reading">읽는 중</SelectItem>
                 <SelectItem value="completed">완독</SelectItem>
+                <SelectItem value="stopped">그만 읽기</SelectItem>
               </SelectContent>
             </Select>
 
