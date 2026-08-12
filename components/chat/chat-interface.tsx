@@ -239,7 +239,7 @@ export function ChatInterface({
                     'rounded-2xl px-4 py-3 text-sm',
                     msg.role === 'user'
                       ? 'bg-primary text-primary-foreground rounded-tr-sm'
-                      : 'bg-muted text-foreground rounded-tl-sm'
+                      : 'ai-bubble bg-muted text-foreground rounded-tl-sm'
                   )}
                 >
                   {msg.role === 'model' ? (
@@ -267,7 +267,7 @@ export function ChatInterface({
               <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center mr-2">
                 📖
               </div>
-              <div className="bg-muted rounded-2xl rounded-tl-sm px-4 py-3">
+              <div className="ai-bubble bg-muted rounded-2xl rounded-tl-sm px-4 py-3">
                 <Loader2 className="h-4 w-4 animate-spin" />
               </div>
             </div>

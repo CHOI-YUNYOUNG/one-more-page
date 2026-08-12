@@ -237,6 +237,22 @@
   --sidebar-ring: oklch(0.46 0.13 145);
 }
 
+/* 포레스트 테마: AI 채팅 답변 버블을 따뜻한 베이지로 (기본 muted가 너무 어두움) */
+[data-theme="forest"] .ai-bubble {
+  background-color: oklch(0.93 0.025 85);
+  color: oklch(0.29 0.03 150);
+}
+[data-theme="forest"] .ai-bubble .prose {
+  color: oklch(0.29 0.03 150);
+  --tw-prose-body: oklch(0.29 0.03 150);
+  --tw-prose-headings: oklch(0.22 0.03 150);
+  --tw-prose-bold: oklch(0.22 0.03 150);
+  --tw-prose-links: oklch(0.42 0.12 150);
+  --tw-prose-quotes: oklch(0.29 0.03 150);
+  --tw-prose-code: oklch(0.22 0.03 150);
+  --tw-prose-bullets: oklch(0.45 0.04 150);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
