@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -30,7 +31,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { MessageSquare, Sparkles, Loader2, Trash2, ChevronLeft } from 'lucide-react'
+import { MessageSquare, Sparkles, Loader2, Trash2, ChevronLeft, NotebookPen, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 
@@ -49,6 +50,9 @@ export default function BookDetailPage() {
   const [highlights, setHighlights] = useState<Highlight[]>([])
   const [loadingAI, setLoadingAI] = useState(false)
   const [currentPage, setCurrentPage] = useState('')
+  const [review, setReview] = useState('')
+  const [savingReview, setSavingReview] = useState(false)
+  const [activeTab, setActiveTab] = useState('summary')
 
   const fetchData = useCallback(async () => {
     if (!userId) return
@@ -61,6 +65,7 @@ export default function BookDetailPage() {
     if (ub) {
       setUserBook(ub as UserBook)
       setCurrentPage(String(ub.current_page || ''))
+      setReview(ub.review ?? '')
     }
 
     const { data: hl } = await supabase
@@ -109,6 +114,19 @@ export default function BookDetailPage() {
   const updateStatus = async (status: string | null) => {
     if (!status) return
     await supabase.from('user_books').update({ status }).eq('id', id)
+    // 완독으로 바꾸면 총평 탭으로 유도
+    if (status === 'completed') {
+      setActiveTab('review')
+      toast('완독 축하해요! 🎉 총평을 남겨보는 건 어때요?')
+    }
+    fetchData()
+  }
+
+  const saveReview = async () => {
+    setSavingReview(true)
+    await supabase.from('user_books').update({ review: review.trim() || null }).eq('id', id)
+    toast.success('총평이 저장되었습니다.')
+    setSavingReview(false)
     fetchData()
   }
 
@@ -254,11 +272,12 @@ export default function BookDetailPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="summary">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-full">
           <TabsTrigger value="summary" className="flex-1">AI 요약</TabsTrigger>
           <TabsTrigger value="plan" className="flex-1">독서 루틴</TabsTrigger>
           <TabsTrigger value="highlights" className="flex-1">하이라이트</TabsTrigger>
+          <TabsTrigger value="review" className="flex-1">총평</TabsTrigger>
           <TabsTrigger value="chat" className="flex-1 relative">
             <Link href={`/books/${id}/chat`} className="flex items-center gap-1">
               <MessageSquare className="h-3 w-3" />
@@ -358,6 +377,46 @@ export default function BookDetailPage() {
             highlights={highlights}
             onAdded={fetchData}
           />
+        </TabsContent>
+
+        <TabsContent value="review" className="mt-4">
+          <Card>
+            <CardHeader className="flex-row items-center justify-between pb-3">
+              <CardTitle className="text-base flex items-center gap-1.5">
+                <NotebookPen className="h-4 w-4" />
+                나의 총평
+              </CardTitle>
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Lock className="h-3 w-3" />
+                나만 보기
+              </span>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {userBook.rating ? (
+                <p className="text-sm text-muted-foreground">
+                  내 별점 {'★'.repeat(userBook.rating)}{'☆'.repeat(5 - userBook.rating)}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  상단에서 별점도 함께 남겨보세요.
+                </p>
+              )}
+              <Textarea
+                placeholder="이 책을 읽고 난 생각을 독후감처럼 자유롭게 남겨보세요."
+                value={review}
+                onChange={(e) => setReview(e.target.value)}
+                rows={10}
+                className="resize-none leading-relaxed"
+              />
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">{review.length}자</span>
+                <Button size="sm" onClick={saveReview} disabled={savingReview}>
+                  {savingReview ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                  총평 저장
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
