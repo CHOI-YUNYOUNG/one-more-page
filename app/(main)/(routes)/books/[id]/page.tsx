@@ -6,7 +6,8 @@ import Image from 'next/image'
 import { supabase, UserBook, Highlight, ReadingPlan } from '@/lib/supabase'
 import { useUser } from '@/hooks/use-user'
 import { HighlightForm } from '@/components/books/highlight-form'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -429,7 +430,7 @@ export default function BookDetailPage() {
                       수정
                     </Button>
                     <AlertDialog>
-                      <AlertDialogTrigger className="inline-flex h-8 items-center justify-center gap-1 rounded-md border border-input bg-background px-3 text-sm hover:bg-accent hover:text-accent-foreground transition-colors">
+                      <AlertDialogTrigger className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}>
                         <Trash2 className="h-3 w-3" />
                         삭제
                       </AlertDialogTrigger>
