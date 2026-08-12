@@ -34,6 +34,13 @@ import { MessageSquare, Sparkles, Loader2, Trash2, ChevronLeft } from 'lucide-re
 import Link from 'next/link'
 import { toast } from 'sonner'
 
+const STATUS_LABELS: Record<string, string> = {
+  wishlist: '읽고 싶어요',
+  reading: '읽는 중',
+  completed: '완독',
+  stopped: '그만 읽기',
+}
+
 export default function BookDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
@@ -179,7 +186,7 @@ export default function BookDetailPage() {
           <div className="flex flex-wrap gap-2">
             <Select value={userBook.status} onValueChange={updateStatus}>
               <SelectTrigger className="w-32 h-8 text-xs">
-                <SelectValue />
+                <SelectValue>{(v) => STATUS_LABELS[v as string] ?? v}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="wishlist">읽고 싶어요</SelectItem>
@@ -191,7 +198,9 @@ export default function BookDetailPage() {
 
             <Select value={String(userBook.rating || '')} onValueChange={updateRating}>
               <SelectTrigger className="w-28 h-8 text-xs">
-                <SelectValue placeholder="별점" />
+                <SelectValue placeholder="별점">
+                  {(v) => (v ? '★'.repeat(Number(v)) + '☆'.repeat(5 - Number(v)) : '별점')}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {[1, 2, 3, 4, 5].map((n) => (

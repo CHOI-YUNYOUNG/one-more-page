@@ -31,6 +31,7 @@ export default function DashboardPage() {
       // 가입일부터 오늘까지 함께한 일수 (가입 당일 = 1일)
       const days = differenceInCalendarDays(new Date(), new Date(user.created_at)) + 1
       const messages = [
+        `한 장 더와 함께한 지 ${days}일, 반가워요!`,
         `한 장 더와 함께한 지 ${days}일, 우리 더 오래 봐요!`,
         `한 장 더와 함께한 지 ${days}일, 독서왕이 되는 그날까지!`,
         ...(name ? [`한 장 더와 함께한 지 ${days}일, ${name}님 또 오셨네요, 반가워요!`] : []),
