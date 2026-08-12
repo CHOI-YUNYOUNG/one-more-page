@@ -31,7 +31,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { MessageSquare, Sparkles, Loader2, Trash2, ChevronLeft, NotebookPen, Lock } from 'lucide-react'
+import { MessageSquare, Sparkles, Loader2, Trash2, ChevronLeft, NotebookPen, Lock, Pencil } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 
@@ -52,6 +52,7 @@ export default function BookDetailPage() {
   const [currentPage, setCurrentPage] = useState('')
   const [review, setReview] = useState('')
   const [savingReview, setSavingReview] = useState(false)
+  const [editingReview, setEditingReview] = useState(false)
   const [activeTab, setActiveTab] = useState('summary')
 
   const fetchData = useCallback(async () => {
@@ -123,10 +124,20 @@ export default function BookDetailPage() {
   }
 
   const saveReview = async () => {
+    if (!review.trim()) return
     setSavingReview(true)
-    await supabase.from('user_books').update({ review: review.trim() || null }).eq('id', id)
+    await supabase.from('user_books').update({ review: review.trim() }).eq('id', id)
     toast.success('총평이 저장되었습니다.')
     setSavingReview(false)
+    setEditingReview(false)
+    fetchData()
+  }
+
+  const deleteReview = async () => {
+    await supabase.from('user_books').update({ review: null }).eq('id', id)
+    toast.success('총평이 삭제되었습니다.')
+    setReview('')
+    setEditingReview(false)
     fetchData()
   }
 
@@ -401,20 +412,75 @@ export default function BookDetailPage() {
                   상단에서 별점도 함께 남겨보세요.
                 </p>
               )}
-              <Textarea
-                placeholder="이 책을 읽고 난 생각을 독후감처럼 자유롭게 남겨보세요."
-                value={review}
-                onChange={(e) => setReview(e.target.value)}
-                rows={10}
-                className="resize-none leading-relaxed"
-              />
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">{review.length}자</span>
-                <Button size="sm" onClick={saveReview} disabled={savingReview}>
-                  {savingReview ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
-                  총평 저장
-                </Button>
-              </div>
+
+              {userBook.review && !editingReview ? (
+                <>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{userBook.review}</p>
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setReview(userBook.review ?? '')
+                        setEditingReview(true)
+                      }}
+                    >
+                      <Pencil className="h-3 w-3 mr-1" />
+                      수정
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger className="inline-flex h-8 items-center justify-center gap-1 rounded-md border border-input bg-background px-3 text-sm hover:bg-accent hover:text-accent-foreground transition-colors">
+                        <Trash2 className="h-3 w-3" />
+                        삭제
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>총평을 삭제할까요?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            작성한 총평이 삭제되며 되돌릴 수 없습니다.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>취소</AlertDialogCancel>
+                          <AlertDialogAction onClick={deleteReview}>삭제</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Textarea
+                    placeholder="이 책을 읽고 난 생각을 독후감처럼 자유롭게 남겨보세요."
+                    value={review}
+                    onChange={(e) => setReview(e.target.value)}
+                    rows={10}
+                    className="resize-none leading-relaxed"
+                  />
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">{review.length}자</span>
+                    <div className="flex gap-2">
+                      {editingReview && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setReview(userBook.review ?? '')
+                            setEditingReview(false)
+                          }}
+                          disabled={savingReview}
+                        >
+                          취소
+                        </Button>
+                      )}
+                      <Button size="sm" onClick={saveReview} disabled={savingReview || !review.trim()}>
+                        {savingReview ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                        총평 저장
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
