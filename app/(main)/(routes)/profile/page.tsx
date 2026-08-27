@@ -187,7 +187,7 @@ export default function ProfilePage() {
       </Link>
 
       {/* 알림 */}
-      <Card>
+      <Card className="mt-3">
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Bell className="h-4 w-4" />
