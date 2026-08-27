@@ -1,6 +1,6 @@
 import { forwardRef } from 'react'
 import { UserBook } from '@/lib/supabase'
-import { Star, BookOpen, Highlighter } from 'lucide-react'
+import { Star, Highlighter } from 'lucide-react'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 
@@ -28,12 +28,7 @@ export const MonthlyReportCard = forwardRef<HTMLDivElement, MonthlyReportData>(
           <h2 className="text-2xl font-bold">{format(month, 'yyyy년 M월', { locale: ko })}</h2>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 text-center">
-          <div className="bg-primary/5 rounded-xl py-3 space-y-1">
-            <BookOpen className="h-4 w-4 mx-auto text-primary" />
-            <p className="text-lg font-bold">{completedBooks.length}</p>
-            <p className="text-[11px] text-muted-foreground">완독</p>
-          </div>
+        <div className="grid grid-cols-2 gap-3 text-center">
           <div className="bg-primary/5 rounded-xl py-3 space-y-1">
             <Star className="h-4 w-4 mx-auto text-primary" />
             <p className="text-lg font-bold">{avgRating > 0 ? avgRating.toFixed(1) : '-'}</p>

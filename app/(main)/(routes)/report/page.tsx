@@ -4,12 +4,13 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase, UserBook, Book } from '@/lib/supabase'
 import { useUser } from '@/hooks/use-user'
 import { MonthlyReportCard } from '@/components/report/monthly-report-card'
+import { ReportHero } from '@/components/report/report-hero'
+import { AnimatedSection } from '@/components/report/animated-section'
 import {
   TopRatedCard,
   MostHighlightedCard,
   FirstReadCard,
   TopGenreCard,
-  PagesStackCard,
   TopRatedBook,
   TopHighlightedBook,
   FirstReadBook,
@@ -24,6 +25,9 @@ import { toast } from 'sonner'
 
 type HighlightWithBook = { book_id: string; book: Pick<Book, 'title' | 'cover_url'> | null }
 
+// 종이 한 장(리프) 두께를 약 0.1mm로 가정한 재미용 근사치.
+const MM_PER_PAGE = 0.1
+
 export default function ReportPage() {
   const userId = useUser()
   const [currentMonth, setCurrentMonth] = useState(new Date())
@@ -36,7 +40,6 @@ export default function ReportPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [capturing, setCapturing] = useState(false)
-  const cardRef = useRef<HTMLDivElement>(null)
   const captureRef = useRef<HTMLDivElement>(null)
 
   // 최초 진입 시, 가장 최근 완독한 달을 기본값으로 잡는다.
@@ -144,7 +147,17 @@ export default function ReportPage() {
   })()
 
   const totalPages = completedBooks.reduce((sum, b) => sum + (b.total_pages ?? 0), 0)
-  const hasStoryCards = !!topRated || !!mostHighlighted || !!firstRead || !!topGenre || totalPages > 0
+  const heightCm = (totalPages * MM_PER_PAGE) / 10
+  const isMeters = heightCm >= 100
+  const heightValue = isMeters ? heightCm / 100 : heightCm
+  const heightUnit = isMeters ? 'm' : 'cm'
+
+  const storyCards = [
+    topRated && <TopRatedCard key="top-rated" book={topRated} />,
+    mostHighlighted && <MostHighlightedCard key="most-highlighted" book={mostHighlighted} />,
+    topGenre && <TopGenreCard key="top-genre" genre={topGenre} />,
+    firstRead && <FirstReadCard key="first-read" book={firstRead} />,
+  ].filter(Boolean)
 
   const saveAsImage = async () => {
     if (!captureRef.current) return
@@ -217,32 +230,49 @@ export default function ReportPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex justify-center py-16">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <div ref={captureRef} className="space-y-3 bg-background">
-              <MonthlyReportCard
-                ref={cardRef}
-                month={currentMonth}
-                completedBooks={completedBooks}
-                highlightCount={highlightCount}
-              />
-              {hasStoryCards && (
-                <div className="space-y-3">
-                  {totalPages > 0 && <PagesStackCard totalPages={totalPages} animate={!capturing} />}
-                  {topRated && <TopRatedCard book={topRated} />}
-                  {mostHighlighted && <MostHighlightedCard book={mostHighlighted} />}
-                  {firstRead && <FirstReadCard book={firstRead} />}
-                  {topGenre && <TopGenreCard genre={topGenre} />}
-                </div>
-              )}
+      </Card>
+
+      {loading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <div ref={captureRef} className="space-y-4 bg-background">
+          <AnimatedSection>
+            <ReportHero
+              bookCount={completedBooks.length}
+              totalPages={totalPages}
+              heightValue={heightValue}
+              heightUnit={heightUnit}
+              animate={!capturing}
+            />
+          </AnimatedSection>
+
+          {storyCards.length > 0 && (
+            <div className="space-y-3">
+              {storyCards.map((card, i) => (
+                <AnimatedSection key={i} delayMs={150 + i * 120}>
+                  {card}
+                </AnimatedSection>
+              ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+
+          <AnimatedSection delayMs={150 + storyCards.length * 120}>
+            <MonthlyReportCard
+              month={currentMonth}
+              completedBooks={completedBooks}
+              highlightCount={highlightCount}
+            />
+          </AnimatedSection>
+
+          <AnimatedSection delayMs={250 + storyCards.length * 120}>
+            <p className="text-center text-sm text-muted-foreground py-2">
+              다음 달에도 좋은 책과 함께해요 📖✨
+            </p>
+          </AnimatedSection>
+        </div>
+      )}
 
       <Button onClick={saveAsImage} disabled={loading || saving} className="w-full" variant="outline">
         {saving ? (

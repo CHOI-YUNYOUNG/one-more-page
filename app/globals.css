@@ -264,3 +264,18 @@
     @apply font-sans;
   }
 }
+
+/* 리포트 히어로 카드용 배경 그라디언트 애니메이션 */
+@keyframes gradient-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 6s ease infinite;
+}

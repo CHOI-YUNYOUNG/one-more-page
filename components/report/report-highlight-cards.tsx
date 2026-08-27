@@ -1,9 +1,8 @@
 import Image from 'next/image'
-import { Star, Highlighter, BookOpen, Tag, Layers } from 'lucide-react'
+import { Star, Highlighter, BookOpen, Tag } from 'lucide-react'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
-import { CountUpNumber } from './count-up-number'
 
 export type TopRatedBook = { title: string; cover_url: string | null; rating: number }
 export type TopHighlightedBook = { title: string; cover_url: string | null; count: number }
@@ -28,7 +27,7 @@ function StoryCard({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-2xl p-5 text-white flex items-center gap-4 min-h-[128px]',
+        'relative overflow-hidden rounded-2xl p-5 text-white flex items-center gap-4 min-h-[128px] shadow-lg transition-transform duration-200 active:scale-[0.98]',
         gradient
       )}
     >
@@ -100,40 +99,6 @@ export function FirstReadCard({ book }: { book: FirstReadBook }) {
         {format(new Date(book.started_at), 'M월 d일', { locale: ko })}에 시작했어요
       </p>
     </StoryCard>
-  )
-}
-
-// 종이 한 장(리프) 두께를 약 0.1mm로 가정한 재미용 근사치.
-const MM_PER_PAGE = 0.1
-
-export function PagesStackCard({ totalPages, animate }: { totalPages: number; animate: boolean }) {
-  const heightCm = (totalPages * MM_PER_PAGE) / 10
-  const isMeters = heightCm >= 100
-  const heightValue = isMeters ? heightCm / 100 : heightCm
-  const unit = isMeters ? 'm' : 'cm'
-
-  return (
-    <div className="relative overflow-hidden rounded-2xl p-5 text-white bg-gradient-to-br from-rose-500 to-pink-700">
-      <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-white/80">
-        <Layers className="h-4 w-4" />이 달 읽은 페이지
-      </p>
-      <div className="mt-2 flex items-end gap-8">
-        <div>
-          <p className="text-3xl font-bold leading-none">
-            <CountUpNumber value={totalPages} animate={animate} />
-            <span className="text-lg font-medium ml-0.5">장</span>
-          </p>
-          <p className="text-xs text-white/70 mt-1.5">완독한 책 기준</p>
-        </div>
-        <div>
-          <p className="text-3xl font-bold leading-none">
-            <CountUpNumber value={heightValue} decimals={1} animate={animate} />
-            <span className="text-lg font-medium ml-0.5">{unit}</span>
-          </p>
-          <p className="text-xs text-white/70 mt-1.5">쌓으면 이만큼(약)</p>
-        </div>
-      </div>
-    </div>
   )
 }
 

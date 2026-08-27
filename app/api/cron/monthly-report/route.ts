@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
 
     const payload = JSON.stringify({
       title: '한 장 더',
-      body: '월간 리포트가 도착했어요! 한 장 더와 함께한 한 달. 같이 확인해요!',
+      body: '월간 리포트가 도착했어요! 한 장 더와 함께한 한 달. 같이 확인해요. ⭐️',
       url: '/report',
     })
 
