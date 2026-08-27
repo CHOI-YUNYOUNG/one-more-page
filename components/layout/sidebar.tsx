@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ThemeSelector } from './theme-selector'
-import { BookOpen, Search, Home, CalendarCheck, User, LogOut, Highlighter } from 'lucide-react'
+import { BookOpen, Search, Home, CalendarCheck, User, LogOut, Highlighter, BarChart3 } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { useEffect, useState } from 'react'
 
@@ -14,6 +14,7 @@ const navItems = [
   { href: '/books', label: '내 책장', icon: BookOpen },
   { href: '/my-highlights', label: '내 하이라이트', icon: Highlighter },
   { href: '/attendance', label: '출석 체크', icon: CalendarCheck },
+  { href: '/report', label: '리포트', icon: BarChart3 },
   { href: '/profile', label: '프로필', icon: User },
 ]
 

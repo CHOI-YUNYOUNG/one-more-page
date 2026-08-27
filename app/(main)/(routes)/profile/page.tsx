@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
-import { Flame, Trophy, Target, BookOpen, MessageSquare, User, Pencil, Palette } from 'lucide-react'
+import { Flame, Trophy, Target, BookOpen, MessageSquare, User, Pencil, Palette, BarChart3, ChevronRight } from 'lucide-react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
@@ -166,6 +167,22 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* 월간 리포트 */}
+      <Link href="/report">
+        <Card className="hover:border-primary/50 transition-colors">
+          <CardContent className="py-4 flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <BarChart3 className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium">이번 달의 기록 보기</p>
+              <p className="text-xs text-muted-foreground">월간 독서 리포트를 확인해보세요</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </CardContent>
+        </Card>
+      </Link>
 
       {/* 테마 설정 */}
       <Card>
