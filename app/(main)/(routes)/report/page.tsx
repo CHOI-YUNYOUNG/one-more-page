@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase, UserBook, Book } from '@/lib/supabase'
 import { useUser } from '@/hooks/use-user'
+import { createClient } from '@/utils/supabase/client'
 import { MonthlyReportCard } from '@/components/report/monthly-report-card'
 import { ReportHero } from '@/components/report/report-hero'
 import { AnimatedSection } from '@/components/report/animated-section'
+import { HighlightTypewriter } from '@/components/report/highlight-typewriter'
 import {
   TopRatedCard,
   MostHighlightedCard,
@@ -35,12 +37,22 @@ export default function ReportPage() {
   const [highlightCount, setHighlightCount] = useState(0)
   const [mostHighlighted, setMostHighlighted] = useState<TopHighlightedBook | null>(null)
   const [firstRead, setFirstRead] = useState<FirstReadBook | null>(null)
+  const [sampledHighlights, setSampledHighlights] = useState<string[]>([])
+  const [userName, setUserName] = useState('글벗')
   const [loading, setLoading] = useState(true)
   const [initialized, setInitialized] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [capturing, setCapturing] = useState(false)
   const captureRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const supabaseClient = createClient()
+    supabaseClient.auth.getUser().then(({ data: { user } }) => {
+      const name = (user?.user_metadata?.display_name as string | undefined)?.trim() || '글벗'
+      setUserName(name)
+    })
+  }, [])
 
   // 최초 진입 시, 가장 최근 완독한 달을 기본값으로 잡는다.
   useEffect(() => {
@@ -66,36 +78,43 @@ export default function ReportPage() {
     const start = startOfMonth(currentMonth).toISOString()
     const end = endOfMonth(currentMonth).toISOString()
 
-    const [{ data: books }, { count }, { data: highlightRows }, { data: firstReadRow }] = await Promise.all([
-      supabase
-        .from('user_books')
-        .select('*, book:books(*)')
-        .eq('user_id', userId)
-        .eq('status', 'completed')
-        .gte('finished_at', start)
-        .lte('finished_at', end),
-      supabase
-        .from('highlights')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .gte('created_at', start)
-        .lte('created_at', end),
-      supabase
-        .from('highlights')
-        .select('book_id, book:books(title, cover_url)')
-        .eq('user_id', userId)
-        .gte('created_at', start)
-        .lte('created_at', end),
-      supabase
-        .from('user_books')
-        .select('started_at, book:books(title, cover_url)')
-        .eq('user_id', userId)
-        .gte('started_at', start)
-        .lte('started_at', end)
-        .order('started_at', { ascending: true })
-        .limit(1)
-        .maybeSingle(),
-    ])
+    const [{ data: books }, { count }, { data: highlightRows }, { data: firstReadRow }, { data: highlightTexts }] =
+      await Promise.all([
+        supabase
+          .from('user_books')
+          .select('*, book:books(*)')
+          .eq('user_id', userId)
+          .eq('status', 'completed')
+          .gte('finished_at', start)
+          .lte('finished_at', end),
+        supabase
+          .from('highlights')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .gte('created_at', start)
+          .lte('created_at', end),
+        supabase
+          .from('highlights')
+          .select('book_id, book:books(title, cover_url)')
+          .eq('user_id', userId)
+          .gte('created_at', start)
+          .lte('created_at', end),
+        supabase
+          .from('user_books')
+          .select('started_at, book:books(title, cover_url)')
+          .eq('user_id', userId)
+          .gte('started_at', start)
+          .lte('started_at', end)
+          .order('started_at', { ascending: true })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('highlights')
+          .select('content')
+          .eq('user_id', userId)
+          .gte('created_at', start)
+          .lte('created_at', end),
+      ])
 
     setCompletedBooks((books as UserBook[]) ?? [])
     setHighlightCount(count ?? 0)
@@ -115,6 +134,9 @@ export default function ReportPage() {
 
     const fr = firstReadRow as unknown as { started_at: string; book: Pick<Book, 'title' | 'cover_url'> } | null
     setFirstRead(fr?.book ? { title: fr.book.title, cover_url: fr.book.cover_url, started_at: fr.started_at } : null)
+
+    const texts = (highlightTexts ?? []).map((r) => r.content).filter((c) => c.trim().length > 0)
+    setSampledHighlights([...texts].sort(() => Math.random() - 0.5).slice(0, 3))
 
     setLoading(false)
   }, [userId, currentMonth])
@@ -240,6 +262,7 @@ export default function ReportPage() {
         <div ref={captureRef} className="space-y-4 bg-background">
           <AnimatedSection>
             <ReportHero
+              userName={userName}
               bookCount={completedBooks.length}
               totalPages={totalPages}
               heightValue={heightValue}
@@ -258,7 +281,13 @@ export default function ReportPage() {
             </div>
           )}
 
-          <AnimatedSection delayMs={150 + storyCards.length * 120}>
+          {sampledHighlights.length > 0 && (
+            <AnimatedSection delayMs={150 + storyCards.length * 120}>
+              <HighlightTypewriter highlights={sampledHighlights} animate={!capturing} />
+            </AnimatedSection>
+          )}
+
+          <AnimatedSection delayMs={200 + (storyCards.length + 1) * 120}>
             <MonthlyReportCard
               month={currentMonth}
               completedBooks={completedBooks}
@@ -266,7 +295,7 @@ export default function ReportPage() {
             />
           </AnimatedSection>
 
-          <AnimatedSection delayMs={250 + storyCards.length * 120}>
+          <AnimatedSection delayMs={300 + (storyCards.length + 1) * 120}>
             <p className="text-center text-sm text-muted-foreground py-2">
               다음 달에도 좋은 책과 함께해요 📖✨
             </p>
