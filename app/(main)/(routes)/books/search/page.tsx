@@ -181,8 +181,16 @@ export default function BookSearchPage() {
       return
     }
 
+    const now = new Date().toISOString()
     const { error: ubError } = await supabase.from('user_books').upsert(
-      { user_id: userId, book_id: bookId, status: statusChoice, total_pages: selectedBook.itemPage || null },
+      {
+        user_id: userId,
+        book_id: bookId,
+        status: statusChoice,
+        total_pages: selectedBook.itemPage || null,
+        started_at: statusChoice === 'reading' || statusChoice === 'completed' ? now : null,
+        finished_at: statusChoice === 'completed' ? now : null,
+      },
       { onConflict: 'user_id,book_id' }
     )
 

@@ -116,9 +116,11 @@ export default function BookDetailPage() {
   const updateStatus = async (status: string | null) => {
     if (!status) return
     const patch: Record<string, string | null> = { status }
+    if ((status === 'reading' || status === 'completed') && !userBook?.started_at) {
+      patch.started_at = new Date().toISOString()
+    }
     if (status === 'completed') {
       patch.finished_at = new Date().toISOString()
-      if (!userBook?.started_at) patch.started_at = new Date().toISOString()
     } else if (userBook?.status === 'completed') {
       patch.finished_at = null
     }
