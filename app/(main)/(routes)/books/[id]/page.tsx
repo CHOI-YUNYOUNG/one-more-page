@@ -115,7 +115,14 @@ export default function BookDetailPage() {
 
   const updateStatus = async (status: string | null) => {
     if (!status) return
-    await supabase.from('user_books').update({ status }).eq('id', id)
+    const patch: Record<string, string | null> = { status }
+    if (status === 'completed') {
+      patch.finished_at = new Date().toISOString()
+      if (!userBook?.started_at) patch.started_at = new Date().toISOString()
+    } else if (userBook?.status === 'completed') {
+      patch.finished_at = null
+    }
+    await supabase.from('user_books').update(patch).eq('id', id)
     // 완독으로 바꾸면 총평 탭으로 유도
     if (status === 'completed') {
       setActiveTab('review')
