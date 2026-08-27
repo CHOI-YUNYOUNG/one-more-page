@@ -181,13 +181,25 @@ export default function BookSearchPage() {
       return
     }
 
+    // 검색 목록 API(ItemSearch)는 페이지 수를 안 주기 때문에 단건 조회로 따로 가져온다.
+    let itemPage: number | null = null
+    try {
+      const lookupRes = await fetch(`/api/books/lookup?isbn13=${encodeURIComponent(isbn)}`)
+      if (lookupRes.ok) {
+        const lookupData = await lookupRes.json()
+        itemPage = lookupData.itemPage ?? null
+      }
+    } catch {
+      // 페이지 수 조회 실패는 책 추가 자체를 막지 않는다.
+    }
+
     const now = new Date().toISOString()
     const { error: ubError } = await supabase.from('user_books').upsert(
       {
         user_id: userId,
         book_id: bookId,
         status: statusChoice,
-        total_pages: selectedBook.itemPage || null,
+        total_pages: itemPage,
         started_at: statusChoice === 'reading' || statusChoice === 'completed' ? now : null,
         finished_at: statusChoice === 'completed' ? now : null,
       },
