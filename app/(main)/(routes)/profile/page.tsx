@@ -8,8 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
-import { Flame, Trophy, Target, BookOpen, MessageSquare, User, Pencil, Palette, BarChart3, ChevronRight } from 'lucide-react'
+import { Flame, Trophy, Target, BookOpen, MessageSquare, User, Pencil, Palette, BarChart3, ChevronRight, Bell } from 'lucide-react'
 import Link from 'next/link'
+import { usePushSubscription } from '@/hooks/use-push-subscription'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
@@ -25,6 +26,7 @@ const themes: { value: Theme; label: string; emoji: string; colors: string[] }[]
 export default function ProfilePage() {
   const userId = useUser()
   const { theme, setTheme } = useTheme()
+  const push = usePushSubscription(userId)
   const [displayName, setDisplayName] = useState('')
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState('')
@@ -183,6 +185,39 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </Link>
+
+      {/* 알림 */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Bell className="h-4 w-4" />
+            알림
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium">월간 리포트 알림</p>
+              <p className="text-xs text-muted-foreground">매달 1일, 지난 달 독서 리포트를 알려드려요</p>
+            </div>
+            {push.supported && (
+              <Button
+                size="sm"
+                variant={push.subscribed ? 'outline' : 'default'}
+                disabled={push.loading}
+                onClick={() => (push.subscribed ? push.unsubscribe() : push.subscribe())}
+              >
+                {push.subscribed ? '알림 끄기' : '알림 받기'}
+              </Button>
+            )}
+          </div>
+          {!push.supported && (
+            <p className="text-xs text-muted-foreground">
+              이 브라우저는 푸시 알림을 지원하지 않아요. iOS는 홈 화면에 추가한 앱에서만 알림을 받을 수 있어요 (iOS 16.4+).
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* 테마 설정 */}
       <Card>
