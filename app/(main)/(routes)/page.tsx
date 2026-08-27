@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { differenceInCalendarDays } from 'date-fns'
 import { supabase, UserBook, PublicHighlight } from '@/lib/supabase'
 import { useUser } from '@/hooks/use-user'
@@ -21,6 +21,7 @@ export default function DashboardPage() {
   const { goal, loading, checkedIn, checkIn } = useStreak(userId)
   const [recentBooks, setRecentBooks] = useState<UserBook[]>([])
   const [publicHighlights, setPublicHighlights] = useState<PublicHighlight[]>([])
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set())
   const [greeting, setGreeting] = useState('')
 
   useEffect(() => {
@@ -73,6 +74,23 @@ export default function DashboardPage() {
       }
     })()
   }, [])
+
+  const visibleHighlights = useMemo(
+    () => publicHighlights.filter((h) => h.user_id !== userId).slice(0, 5),
+    [publicHighlights, userId]
+  )
+
+  useEffect(() => {
+    if (!userId || visibleHighlights.length === 0) return
+    ;(async () => {
+      const { data: myLikes } = await supabase
+        .from('highlight_likes')
+        .select('highlight_id')
+        .eq('user_id', userId)
+        .in('highlight_id', visibleHighlights.map((h) => h.id))
+      setLikedIds(new Set((myLikes ?? []).map((r) => r.highlight_id)))
+    })()
+  }, [userId, visibleHighlights])
 
   const handleCheckIn = async () => {
     await checkIn()
@@ -169,7 +187,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {publicHighlights.filter((h) => h.user_id !== userId).length > 0 && (
+      {visibleHighlights.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -183,8 +201,13 @@ export default function DashboardPage() {
             )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {publicHighlights.filter((h) => h.user_id !== userId).slice(0, 5).map((h) => (
-              <PublicHighlightCard key={h.id} highlight={h} />
+            {visibleHighlights.map((h) => (
+              <PublicHighlightCard
+                key={h.id}
+                highlight={h}
+                userId={userId}
+                likedByMe={likedIds.has(h.id)}
+              />
             ))}
           </div>
         </div>

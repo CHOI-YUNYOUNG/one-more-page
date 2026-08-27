@@ -2,14 +2,38 @@
 
 import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { PublicHighlight } from '@/lib/supabase'
-import { formatDate } from '@/lib/utils'
+import { supabase, PublicHighlight } from '@/lib/supabase'
+import { formatDate, cn } from '@/lib/utils'
+import { Heart } from 'lucide-react'
 
 const COLLAPSE_THRESHOLD = 100
 
-export function PublicHighlightCard({ highlight: h }: { highlight: PublicHighlight }) {
+export function PublicHighlightCard({
+  highlight: h,
+  userId,
+  likedByMe,
+}: {
+  highlight: PublicHighlight
+  userId: string
+  likedByMe: boolean
+}) {
   const needsToggle = h.content.length > COLLAPSE_THRESHOLD || h.content.includes('\n')
   const [expanded, setExpanded] = useState(false)
+  const [liked, setLiked] = useState(likedByMe)
+  const [count, setCount] = useState(h.like_count)
+
+  const toggleLike = async () => {
+    const nextLiked = !liked
+    setLiked(nextLiked)
+    setCount((c) => c + (nextLiked ? 1 : -1))
+    const { error } = nextLiked
+      ? await supabase.from('highlight_likes').insert({ user_id: userId, highlight_id: h.id })
+      : await supabase.from('highlight_likes').delete().eq('user_id', userId).eq('highlight_id', h.id)
+    if (error) {
+      setLiked(!nextLiked)
+      setCount((c) => c + (nextLiked ? -1 : 1))
+    }
+  }
 
   return (
     <Card className="overflow-hidden">
@@ -44,6 +68,16 @@ export function PublicHighlightCard({ highlight: h }: { highlight: PublicHighlig
             {h.note}
           </p>
         )}
+        <button
+          onClick={toggleLike}
+          className={cn(
+            'flex items-center gap-1 text-xs pt-1',
+            liked ? 'text-red-500' : 'text-muted-foreground hover:text-red-500'
+          )}
+        >
+          <Heart className={cn('h-3.5 w-3.5', liked && 'fill-current')} />
+          {count > 0 && <span>{count}</span>}
+        </button>
       </CardContent>
     </Card>
   )

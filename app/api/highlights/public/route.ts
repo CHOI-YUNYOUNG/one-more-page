@@ -21,7 +21,21 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json(data ?? [], {
+  const ids = (data ?? []).map((h) => h.id)
+  const counts = new Map<string, number>()
+  if (ids.length > 0) {
+    const { data: likeRows } = await supabase
+      .from('highlight_likes')
+      .select('highlight_id')
+      .in('highlight_id', ids)
+    for (const row of likeRows ?? []) {
+      counts.set(row.highlight_id, (counts.get(row.highlight_id) ?? 0) + 1)
+    }
+  }
+
+  const withCounts = (data ?? []).map((h) => ({ ...h, like_count: counts.get(h.id) ?? 0 }))
+
+  return NextResponse.json(withCounts, {
     headers: {
       'Cache-Control': 'no-store',
     },

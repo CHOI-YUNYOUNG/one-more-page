@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { PublicHighlight } from '@/lib/supabase'
+import { supabase, PublicHighlight } from '@/lib/supabase'
 import { useUser } from '@/hooks/use-user'
 import { Loader2 } from 'lucide-react'
 import { PublicHighlightCard } from '@/components/highlights/public-highlight-card'
@@ -9,6 +9,7 @@ import { PublicHighlightCard } from '@/components/highlights/public-highlight-ca
 export default function PublicHighlightsPage() {
   const userId = useUser()
   const [highlights, setHighlights] = useState<PublicHighlight[]>([])
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -17,7 +18,17 @@ export default function PublicHighlightsPage() {
       const res = await fetch('/api/highlights/public')
       if (res.ok) {
         const data = await res.json()
-        setHighlights((data as PublicHighlight[]).filter((h) => h.user_id !== userId))
+        const filtered = (data as PublicHighlight[]).filter((h) => h.user_id !== userId)
+        setHighlights(filtered)
+
+        if (filtered.length > 0) {
+          const { data: myLikes } = await supabase
+            .from('highlight_likes')
+            .select('highlight_id')
+            .eq('user_id', userId)
+            .in('highlight_id', filtered.map((h) => h.id))
+          setLikedIds(new Set((myLikes ?? []).map((r) => r.highlight_id)))
+        }
       }
       setLoading(false)
     })()
@@ -43,7 +54,12 @@ export default function PublicHighlightsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {highlights.map((h) => (
-            <PublicHighlightCard key={h.id} highlight={h} />
+            <PublicHighlightCard
+              key={h.id}
+              highlight={h}
+              userId={userId}
+              likedByMe={likedIds.has(h.id)}
+            />
           ))}
         </div>
 
