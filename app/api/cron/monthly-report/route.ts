@@ -15,7 +15,11 @@ function getPreviousMonthRangeKST() {
   const startUtcMs = Date.UTC(year, month - 1, 1) - KST_OFFSET_MS
   const endUtcMs = Date.UTC(year, month, 1) - KST_OFFSET_MS - 1
 
-  return { start: new Date(startUtcMs).toISOString(), end: new Date(endUtcMs).toISOString() }
+  return {
+    start: new Date(startUtcMs).toISOString(),
+    end: new Date(endUtcMs).toISOString(),
+    month: ((month - 1 + 12) % 12) + 1, // 1-indexed 지난 달
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -31,7 +35,7 @@ export async function GET(request: NextRequest) {
   )
 
   const admin = getSupabaseAdmin()
-  const { start, end } = getPreviousMonthRangeKST()
+  const { start, end, month } = getPreviousMonthRangeKST()
 
   const { data: subscriptions, error: subError } = await admin.from('push_subscriptions').select('*')
   if (subError) {
@@ -73,7 +77,7 @@ export async function GET(request: NextRequest) {
 
     const payload = JSON.stringify({
       title: '한 장 더',
-      body: '월간 리포트가 도착했어요! 한 장 더와 함께한 한 달. 같이 확인해요. ⭐️',
+      body: `${month}월 월간 리포트가 도착했어요! 한 장 더와 함께한 한 달. 같이 확인해요. ⭐️`,
       url: '/report',
     })
 
