@@ -84,7 +84,7 @@ export default function BookDetailPage() {
   }, [fetchData])
 
   const generateAI = async () => {
-    if (!userBook?.book) return
+    if (!userBook?.book || userBook.book.source === 'manual') return
     setLoadingAI(true)
     try {
       const res = await fetch('/api/ai/summary', {
@@ -182,6 +182,8 @@ export default function BookDetailPage() {
   }
 
   const book = userBook.book!
+  const isManual = book.source === 'manual'
+  const displayTab = isManual && (activeTab === 'summary' || activeTab === 'plan') ? 'highlights' : activeTab
   const plan = userBook.ai_reading_plan as ReadingPlan | null
   const progress =
     userBook.total_pages && userBook.current_page
@@ -217,7 +219,12 @@ export default function BookDetailPage() {
         </div>
         <div className="flex-1 space-y-3">
           <div>
-            <h1 className="text-xl font-bold leading-snug">{book.title}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold leading-snug">{book.title}</h1>
+              {isManual && (
+                <Badge variant="outline" className="text-xs shrink-0">직접 추가</Badge>
+              )}
+            </div>
             <p className="text-muted-foreground">{book.author}</p>
             <p className="text-sm text-muted-foreground">{book.publisher} · {book.pub_date}</p>
           </div>
@@ -293,17 +300,24 @@ export default function BookDetailPage() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={displayTab} onValueChange={setActiveTab}>
         <TabsList className="w-full">
-          <TabsTrigger value="summary" className="flex-1">AI 요약</TabsTrigger>
-          <TabsTrigger value="plan" className="flex-1">독서 루틴</TabsTrigger>
+          <TabsTrigger value="summary" className="flex-1" disabled={isManual}>AI 요약</TabsTrigger>
+          <TabsTrigger value="plan" className="flex-1" disabled={isManual}>독서 루틴</TabsTrigger>
           <TabsTrigger value="highlights" className="flex-1">하이라이트</TabsTrigger>
           <TabsTrigger value="review" className="flex-1">총평</TabsTrigger>
-          <TabsTrigger value="chat" className="flex-1 relative">
-            <Link href={`/books/${id}/chat`} className="flex items-center gap-1">
-              <MessageSquare className="h-3 w-3" />
-              AI 토론
-            </Link>
+          <TabsTrigger value="chat" className="flex-1 relative" disabled={isManual}>
+            {isManual ? (
+              <span className="flex items-center gap-1">
+                <MessageSquare className="h-3 w-3" />
+                AI 토론
+              </span>
+            ) : (
+              <Link href={`/books/${id}/chat`} className="flex items-center gap-1">
+                <MessageSquare className="h-3 w-3" />
+                AI 토론
+              </Link>
+            )}
           </TabsTrigger>
         </TabsList>
 
@@ -311,17 +325,25 @@ export default function BookDetailPage() {
           <Card>
             <CardHeader className="flex-row items-center justify-between pb-3">
               <CardTitle className="text-base">AI 책 요약</CardTitle>
-              <Button size="sm" variant="outline" onClick={generateAI} disabled={loadingAI}>
-                {loadingAI ? (
-                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                ) : (
-                  <Sparkles className="h-3 w-3 mr-1" />
-                )}
-                {userBook.ai_summary ? '재생성' : 'AI 요약 생성'}
-              </Button>
+              {!isManual && (
+                <Button size="sm" variant="outline" onClick={generateAI} disabled={loadingAI}>
+                  {loadingAI ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  ) : (
+                    <Sparkles className="h-3 w-3 mr-1" />
+                  )}
+                  {userBook.ai_summary ? '재생성' : 'AI 요약 생성'}
+                </Button>
+              )}
             </CardHeader>
             <CardContent>
-              {userBook.ai_summary ? (
+              {isManual ? (
+                <div className="text-center py-8 text-muted-foreground space-y-2">
+                  <p className="text-3xl">📝</p>
+                  <p className="text-sm">직접 추가한 책은 AI 요약을 사용할 수 없어요.</p>
+                  <p className="text-xs">AI 학습에 필요한 책 데이터가 없기 때문이에요.</p>
+                </div>
+              ) : userBook.ai_summary ? (
                 <p className="text-sm leading-relaxed">{userBook.ai_summary}</p>
               ) : (
                 <div className="text-center py-8 text-muted-foreground space-y-2">
@@ -354,7 +376,13 @@ export default function BookDetailPage() {
         <TabsContent value="plan" className="mt-4">
           <Card>
             <CardContent className="pt-6">
-              {plan ? (
+              {isManual ? (
+                <div className="text-center py-8 text-muted-foreground space-y-2">
+                  <p className="text-3xl">📝</p>
+                  <p className="text-sm">직접 추가한 책은 독서 루틴을 사용할 수 없어요.</p>
+                  <p className="text-xs">AI 학습에 필요한 책 데이터가 없기 때문이에요.</p>
+                </div>
+              ) : plan ? (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary">하루 {plan.daily_minutes}분 권장</Badge>

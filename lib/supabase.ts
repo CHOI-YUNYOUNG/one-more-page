@@ -24,6 +24,7 @@ export type Book = {
   description: string | null
   category: string | null
   pub_date: string | null
+  source: 'aladin' | 'manual'
   created_at: string
 }
 

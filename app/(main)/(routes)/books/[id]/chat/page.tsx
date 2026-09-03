@@ -51,7 +51,15 @@ export default function ChatPage() {
 
       <div className="flex-1 min-h-0 overflow-hidden px-4 pb-4 max-w-3xl mx-auto w-full">
         {userBook ? (
-          <ChatInterface book={userBook.book!} userBookId={id} />
+          userBook.book!.source === 'manual' ? (
+            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground gap-2 px-6">
+              <p className="text-3xl">📝</p>
+              <p className="text-sm">직접 추가한 책은 AI 토론을 이용할 수 없어요.</p>
+              <p className="text-xs">AI 학습에 필요한 책 데이터가 없기 때문이에요.</p>
+            </div>
+          ) : (
+            <ChatInterface book={userBook.book!} userBookId={id} />
+          )
         ) : (
           <div className="flex flex-col h-full">
             <div className="flex-1 space-y-4 pr-4 pt-2">

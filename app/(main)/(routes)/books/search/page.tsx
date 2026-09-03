@@ -6,10 +6,18 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
 import { useUser } from '@/hooks/use-user'
 import { AladinBook } from '@/lib/aladin'
-import { Search, Loader2, BookPlus, X, TrendingUp, Sparkles } from 'lucide-react'
+import { Search, Loader2, BookPlus, X, TrendingUp, Sparkles, PencilLine } from 'lucide-react'
 
 function BookSkeleton({ rank }: { rank?: number }) {
   return (
@@ -112,6 +120,17 @@ export default function BookSearchPage() {
   const [statusChoice, setStatusChoice] = useState<'wishlist' | 'reading' | 'completed'>('wishlist')
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // 직접 추가 폼 상태
+  const [manualOpen, setManualOpen] = useState(false)
+  const [manualSaving, setManualSaving] = useState(false)
+  const [manualTitle, setManualTitle] = useState('')
+  const [manualAuthor, setManualAuthor] = useState('')
+  const [manualPublisher, setManualPublisher] = useState('')
+  const [manualDescription, setManualDescription] = useState('')
+  const [manualCategory, setManualCategory] = useState<string>('none')
+  const [manualStatus, setManualStatus] = useState<'wishlist' | 'reading' | 'completed'>('wishlist')
+  const [categories, setCategories] = useState<string[]>([])
+
   // 랭킹 최초 1회 로드
   useEffect(() => {
     fetch('/api/books/ranking')
@@ -119,6 +138,23 @@ export default function BookSearchPage() {
       .then((data) => setRanking(data))
       .catch(() => {})
       .finally(() => setRankingLoading(false))
+  }, [])
+
+  // 직접 추가 폼의 카테고리 선택지: 알라딘으로 등록된 책들의 카테고리를 재사용
+  useEffect(() => {
+    supabase
+      .from('books')
+      .select('category')
+      .not('category', 'is', null)
+      .then(({ data }) => {
+        if (!data) return
+        const names = new Set<string>()
+        for (const row of data as { category: string | null }[]) {
+          const last = row.category?.split('>').pop()?.trim()
+          if (last) names.add(last)
+        }
+        setCategories(Array.from(names).sort((a, b) => a.localeCompare(b, 'ko')))
+      })
   }, [])
 
   // 실시간 debounce 검색
@@ -215,6 +251,68 @@ export default function BookSearchPage() {
     setAdding(null)
   }
 
+  const resetManualForm = () => {
+    setManualTitle('')
+    setManualAuthor('')
+    setManualPublisher('')
+    setManualDescription('')
+    setManualCategory('none')
+    setManualStatus('wishlist')
+  }
+
+  const addManualBook = async () => {
+    if (!userId) return
+    if (!manualTitle.trim()) {
+      toast.error('책 제목을 입력해주세요.')
+      return
+    }
+    setManualSaving(true)
+
+    const { data: bookData, error: bookError } = await supabase
+      .from('books')
+      .insert({
+        isbn: `manual-${crypto.randomUUID()}`,
+        title: manualTitle.trim(),
+        author: manualAuthor.trim() || null,
+        publisher: manualPublisher.trim() || null,
+        cover_url: null,
+        description: manualDescription.trim() || null,
+        category: manualCategory === 'none' ? null : manualCategory,
+        pub_date: null,
+        source: 'manual',
+      })
+      .select()
+      .single()
+
+    if (bookError || !bookData) {
+      toast.error('책 추가에 실패했습니다.')
+      setManualSaving(false)
+      return
+    }
+
+    const now = new Date().toISOString()
+    const { error: ubError } = await supabase.from('user_books').upsert(
+      {
+        user_id: userId,
+        book_id: bookData.id,
+        status: manualStatus,
+        total_pages: null,
+        started_at: manualStatus === 'reading' || manualStatus === 'completed' ? now : null,
+        finished_at: manualStatus === 'completed' ? now : null,
+      },
+      { onConflict: 'user_id,book_id' }
+    )
+
+    if (ubError) {
+      toast.error('책장에 추가하는 중 오류가 발생했습니다.')
+    } else {
+      toast.success(`"${manualTitle.trim()}"이(가) 책장에 추가되었습니다!`)
+      setManualOpen(false)
+      resetManualForm()
+    }
+    setManualSaving(false)
+  }
+
   const showRanking = !query.trim()
 
   return (
@@ -225,22 +323,28 @@ export default function BookSearchPage() {
       </div>
 
       {/* 검색창 */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="책 제목, 저자, ISBN 입력 시 바로 검색됩니다"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="pl-9 pr-9"
-        />
-        {query && (
-          <button
-            onClick={() => setQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="책 제목, 저자, ISBN 입력 시 바로 검색됩니다"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="pl-9 pr-9"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        <Button variant="outline" onClick={() => setManualOpen(true)} className="shrink-0">
+          <PencilLine className="h-4 w-4 mr-1" />
+          직접 추가
+        </Button>
       </div>
 
       {/* 검색 결과 */}
@@ -255,8 +359,14 @@ export default function BookSearchPage() {
               <BookItem key={book.isbn13 || book.isbn} book={book} onAdd={setSelectedBook} adding={adding} />
             ))
           ) : (
-            <div className="text-center py-12 text-muted-foreground text-sm">
-              {searchError ? '검색 중 오류가 발생했습니다. 다시 시도해주세요.' : '검색 결과가 없어요.'}
+            <div className="text-center py-12 text-muted-foreground text-sm space-y-3">
+              <p>{searchError ? '검색 중 오류가 발생했습니다. 다시 시도해주세요.' : '검색 결과가 없어요.'}</p>
+              {!searchError && (
+                <Button variant="outline" size="sm" onClick={() => setManualOpen(true)}>
+                  <PencilLine className="h-4 w-4 mr-1" />
+                  이 책 직접 추가하기
+                </Button>
+              )}
             </div>
           )}
         </div>
@@ -328,6 +438,92 @@ export default function BookSearchPage() {
             </div>
             <Button className="w-full" onClick={addBook} disabled={!!adding}>
               {adding ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              책장에 추가하기
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 직접 추가 다이얼로그 */}
+      <Dialog open={manualOpen} onOpenChange={(open) => { setManualOpen(open); if (!open) resetManualForm() }}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>책 직접 추가</DialogTitle>
+            <DialogDescription>
+              알라딘에서 검색되지 않는 책을 직접 입력해서 책장에 추가할 수 있어요. 직접 추가한 책은 AI 요약·독서 루틴·AI 토론 기능을 이용할 수 없어요.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">책 제목 <span className="text-destructive">*</span></label>
+              <Input
+                value={manualTitle}
+                onChange={(e) => setManualTitle(e.target.value)}
+                placeholder="책 제목을 입력하세요"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">작가명</label>
+                <Input
+                  value={manualAuthor}
+                  onChange={(e) => setManualAuthor(e.target.value)}
+                  placeholder="작가명"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">출판사</label>
+                <Input
+                  value={manualPublisher}
+                  onChange={(e) => setManualPublisher(e.target.value)}
+                  placeholder="출판사"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">줄거리</label>
+              <Textarea
+                value={manualDescription}
+                onChange={(e) => setManualDescription(e.target.value)}
+                placeholder="책 줄거리를 입력하세요 (선택)"
+                rows={4}
+                className="resize-none"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">카테고리</label>
+              <Select value={manualCategory} onValueChange={(v) => setManualCategory(v ?? 'none')}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">선택 안함</SelectItem>
+                  {categories.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">독서 상태 <span className="text-destructive">*</span></label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['wishlist', 'reading', 'completed'] as const).map((s) => {
+                  const labels = { wishlist: '읽고 싶어요', reading: '읽는 중', completed: '완독' }
+                  return (
+                    <Button key={s} type="button" variant={manualStatus === s ? 'default' : 'outline'} onClick={() => setManualStatus(s)} size="sm">
+                      {labels[s]}
+                    </Button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <Button className="w-full" onClick={addManualBook} disabled={manualSaving}>
+              {manualSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               책장에 추가하기
             </Button>
           </div>
