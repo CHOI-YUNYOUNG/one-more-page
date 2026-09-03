@@ -7,6 +7,7 @@ import { UserBook } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { CircleSlash } from 'lucide-react'
 import Link from 'next/link'
+import { BookCoverPlaceholder } from '@/components/books/book-cover-placeholder'
 
 const statusLabel: Record<string, { label: string; color: string; className?: string }> = {
   wishlist: { label: '읽고 싶어요', color: 'secondary' },
@@ -38,9 +39,7 @@ export function BookCard({ userBook }: { userBook: UserBook }) {
                 className={cn('rounded object-cover', isStopped && 'grayscale')}
               />
             ) : (
-              <div className="w-[60px] h-[85px] bg-muted rounded flex items-center justify-center text-2xl">
-                📚
-              </div>
+              <BookCoverPlaceholder title={book.title} className="w-[60px] h-[85px]" />
             )}
           </div>
           <div className="flex-1 min-w-0">

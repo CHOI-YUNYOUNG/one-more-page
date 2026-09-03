@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'image.aladin.co.kr',
       },
+      {
+        protocol: 'https',
+        hostname: 'cjemqzifnhdhynsolrjq.supabase.co',
+      },
     ],
   },
 };

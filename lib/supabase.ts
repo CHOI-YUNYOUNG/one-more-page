@@ -12,6 +12,9 @@ export const supabase = {
     signOut: () => getSupabase().auth.signOut(),
     getUser: () => getSupabase().auth.getUser(),
   },
+  get storage() {
+    return getSupabase().storage
+  },
 }
 
 export type Book = {

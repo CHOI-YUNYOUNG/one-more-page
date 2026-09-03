@@ -17,6 +17,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import { useUser } from '@/hooks/use-user'
 import { AladinBook } from '@/lib/aladin'
+import { BookCoverPlaceholder } from '@/components/books/book-cover-placeholder'
 import { Search, Loader2, BookPlus, X, TrendingUp, Sparkles, PencilLine } from 'lucide-react'
 
 function BookSkeleton({ rank }: { rank?: number }) {
@@ -129,6 +130,8 @@ export default function BookSearchPage() {
   const [manualDescription, setManualDescription] = useState('')
   const [manualCategory, setManualCategory] = useState<string>('none')
   const [manualStatus, setManualStatus] = useState<'wishlist' | 'reading' | 'completed'>('wishlist')
+  const [manualCoverFile, setManualCoverFile] = useState<File | null>(null)
+  const [manualCoverPreview, setManualCoverPreview] = useState<string | null>(null)
   const [categories, setCategories] = useState<string[]>([])
 
   // 랭킹 최초 1회 로드
@@ -258,6 +261,19 @@ export default function BookSearchPage() {
     setManualDescription('')
     setManualCategory('none')
     setManualStatus('wishlist')
+    setManualCoverFile(null)
+    setManualCoverPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return null
+    })
+  }
+
+  const handleManualCoverChange = (file: File | null) => {
+    setManualCoverPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return file ? URL.createObjectURL(file) : null
+    })
+    setManualCoverFile(file)
   }
 
   const addManualBook = async () => {
@@ -268,6 +284,21 @@ export default function BookSearchPage() {
     }
     setManualSaving(true)
 
+    let coverUrl: string | null = null
+    if (manualCoverFile) {
+      const ext = manualCoverFile.name.split('.').pop() || 'jpg'
+      const path = `${userId}/${crypto.randomUUID()}.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from('book-covers')
+        .upload(path, manualCoverFile)
+      if (uploadError) {
+        toast.error('표지 이미지 업로드에 실패했습니다.')
+        setManualSaving(false)
+        return
+      }
+      coverUrl = supabase.storage.from('book-covers').getPublicUrl(path).data.publicUrl
+    }
+
     const { data: bookData, error: bookError } = await supabase
       .from('books')
       .insert({
@@ -275,7 +306,7 @@ export default function BookSearchPage() {
         title: manualTitle.trim(),
         author: manualAuthor.trim() || null,
         publisher: manualPublisher.trim() || null,
-        cover_url: null,
+        cover_url: coverUrl,
         description: manualDescription.trim() || null,
         category: manualCategory === 'none' ? null : manualCategory,
         pub_date: null,
@@ -454,6 +485,39 @@ export default function BookSearchPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">책 표지</label>
+              <div className="flex items-center gap-3">
+                {manualCoverPreview ? (
+                  <Image
+                    src={manualCoverPreview}
+                    alt="표지 미리보기"
+                    width={60}
+                    height={85}
+                    className="rounded object-cover shrink-0"
+                    unoptimized
+                  />
+                ) : (
+                  <BookCoverPlaceholder title={manualTitle || '표지 없음'} className="w-[60px] h-[85px] shrink-0" />
+                )}
+                <div className="flex-1 space-y-1.5">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleManualCoverChange(e.target.files?.[0] ?? null)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    이미지를 넣지 않으면 책 제목으로 표지를 대신 보여줘요.
+                  </p>
+                  {manualCoverFile && (
+                    <Button type="button" variant="ghost" size="sm" className="h-auto p-0 text-xs" onClick={() => handleManualCoverChange(null)}>
+                      이미지 제거
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-1.5">
               <label className="text-sm font-medium">책 제목 <span className="text-destructive">*</span></label>
               <Input

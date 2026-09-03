@@ -9,6 +9,7 @@ import { HighlightForm } from '@/components/books/highlight-form'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { BookCoverPlaceholder } from '@/components/books/book-cover-placeholder'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
@@ -212,9 +213,7 @@ export default function BookDetailPage() {
               className="rounded-lg shadow-md object-cover"
             />
           ) : (
-            <div className="w-[120px] h-[170px] bg-muted rounded-lg flex items-center justify-center text-4xl shadow-md">
-              📚
-            </div>
+            <BookCoverPlaceholder title={book.title} className="w-[120px] h-[170px] shadow-md" />
           )}
         </div>
         <div className="flex-1 space-y-3">
